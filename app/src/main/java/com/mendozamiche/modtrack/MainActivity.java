@@ -1,28 +1,34 @@
 package com.mendozamiche.modtrack;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.view.ViewPager;
-import android.view.View;
-import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    StatusFragment statusFragment;
+    private LinearLayout moreButtons;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +40,7 @@ public class MainActivity extends AppCompatActivity
 
         DrawerLayout drawer = (DrawerLayout) this.findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(
-            this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(drawerToggle);
         drawerToggle.syncState();
 
@@ -49,6 +55,8 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) this.findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        this.moreButtons = (LinearLayout) findViewById(R.id.more_fabs);
+
 //        ActionBar supportActionBar = getSupportActionBar();
 //        if (supportActionBar != null) {
 //            supportActionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
@@ -59,10 +67,71 @@ public class MainActivity extends AppCompatActivity
         actionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+                LinearLayout moreButtons = (LinearLayout) findViewById(R.id.more_fabs);
+                if (moreButtons.getVisibility() == View.VISIBLE) {
+                    moreButtons.setVisibility(View.INVISIBLE);
+                } else {
+                    moreButtons.setVisibility(View.VISIBLE);
+                }
             }
         });
+
+        FloatingActionButton statusButton = (FloatingActionButton) this.findViewById(R.id.floating_action_button_new_status);
+        statusButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.this.hideMoreFabs();
+                MainActivity.this.showAddStatusDialog();
+            }
+        });
+
+        FloatingActionButton wishlistButton = (FloatingActionButton) this.findViewById(R.id.floating_action_button_new_wishlist);
+        wishlistButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.this.hideMoreFabs();
+
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+            }
+        });
+    }
+
+    private void hideMoreFabs() {
+        if (moreButtons.getVisibility() == View.VISIBLE) {
+            moreButtons.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void showAddStatusDialog() {
+        final EditText editText = new EditText(this);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        editText.setLayoutParams(lp);
+
+        final AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setView(editText);
+        alert.setTitle("New Status");
+
+        alert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String editTextValue = editText.getText().toString();
+                if (!TextUtils.isEmpty(editTextValue)) {
+                    MainActivity.this.statusFragment.addStatus(editTextValue);
+                }
+            }
+        });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // what ever you want to do with No option.
+                dialog.cancel();
+            }
+        });
+        alert.show();
     }
 
     @Override
@@ -127,11 +196,11 @@ public class MainActivity extends AppCompatActivity
 
     // Add Fragments to Tabs
     private void setupViewPager(ViewPager viewPager) {
+        this.statusFragment = new StatusFragment();
+
         Adapter adapter = new Adapter(getSupportFragmentManager());
-        adapter.addFragment(new StatusFragment(), "Status");
+        adapter.addFragment(this.statusFragment, "Status");
         adapter.addFragment(new ModsFragment(), "Mods List");
-//        adapter.addFragment(new TileContentFragment(), "Tile");
-//        adapter.addFragment(new CardContentFragment(), "Card");
         viewPager.setAdapter(adapter);
     }
 
