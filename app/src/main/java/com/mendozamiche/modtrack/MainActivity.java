@@ -1,6 +1,7 @@
 package com.mendozamiche.modtrack;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -29,10 +30,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     StatusFragment statusFragment;
     private LinearLayout moreButtons;
+    private UserPrefs userPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        this.userPrefs = new UserPrefs(this);
+
         this.setContentView(R.layout.activity_main);
 
         Toolbar toolbar = (Toolbar) this.findViewById(R.id.toolbar);
@@ -46,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Setting ViewPager for each Tabs
         ViewPager viewPager = (ViewPager) this.findViewById(R.id.viewpager);
+        viewPager.setId(R.id.viewpager);
         this.setupViewPager(viewPager);
 
         // Set Tabs inside Toolbar
@@ -92,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(View view) {
                 MainActivity.this.hideMoreFabs();
+                MainActivity.this.startActivity(new Intent(MainActivity.this, ModsFormActivity.class));
 
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
@@ -100,8 +107,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void hideMoreFabs() {
-        if (moreButtons.getVisibility() == View.VISIBLE) {
-            moreButtons.setVisibility(View.INVISIBLE);
+        if (this.moreButtons.getVisibility() == View.VISIBLE) {
+            this.moreButtons.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -198,15 +205,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void setupViewPager(ViewPager viewPager) {
         this.statusFragment = new StatusFragment();
 
-        Adapter adapter = new Adapter(getSupportFragmentManager());
+        Adapter adapter = new Adapter(this.getSupportFragmentManager());
         adapter.addFragment(this.statusFragment, "Status");
-        adapter.addFragment(new ModsFragment(), "Mods List");
+        adapter.addFragment(new ModsFragment(), "mods List");
         viewPager.setAdapter(adapter);
     }
 
-    static class Adapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragmentList = new ArrayList<>();
-        private final List<String> mFragmentTitleList = new ArrayList<>();
+    private class Adapter extends FragmentPagerAdapter {
+        private final List<Fragment> fragmentList = new ArrayList<>();
+        private final List<String> fragmentTitleList = new ArrayList<>();
 
         public Adapter(FragmentManager manager) {
             super(manager);
@@ -214,22 +221,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         @Override
         public Fragment getItem(int position) {
-            return mFragmentList.get(position);
+            return this.fragmentList.get(position);
         }
 
         @Override
         public int getCount() {
-            return mFragmentList.size();
+            return this.fragmentList.size();
         }
 
         public void addFragment(Fragment fragment, String title) {
-            mFragmentList.add(fragment);
-            mFragmentTitleList.add(title);
+            this.fragmentList.add(fragment);
+            this.fragmentTitleList.add(title);
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return mFragmentTitleList.get(position);
+            return this.fragmentTitleList.get(position);
         }
     }
 }

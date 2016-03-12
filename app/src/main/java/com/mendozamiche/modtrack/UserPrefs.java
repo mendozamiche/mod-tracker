@@ -9,6 +9,8 @@ import android.content.SharedPreferences;
 
 public class UserPrefs {
     private static final String PREFS_FILENAME = "UserPrefs";
+    public static final String NUM_STATUS_ITEMS = "NUM_STATUS_ITEMS";
+    public static final String STATUS_ITEM_KEY = "STATUS_ITEM";
     private final SharedPreferences userPrefs;
 
     public UserPrefs(Context context) {
@@ -37,13 +39,13 @@ public class UserPrefs {
         return editor.commit();
     }
 
-    private boolean set(String key, String value) {
+    public boolean set(String key, String value) {
         SharedPreferences.Editor editor = this.userPrefs.edit();
         editor.putString(key, value);
         return editor.commit();
     }
 
-    private boolean set(String key, int value) {
+    public boolean set(String key, int value) {
         SharedPreferences.Editor editor = this.userPrefs.edit();
         editor.putInt(key, value);
         return editor.commit();
@@ -59,5 +61,14 @@ public class UserPrefs {
         SharedPreferences.Editor editor = this.userPrefs.edit();
         editor.putBoolean(key, value);
         return editor.commit();
+    }
+
+    public int getNumItems(){
+        return this.userPrefs.getInt(NUM_STATUS_ITEMS, 0);
+    }
+
+    public String getStatusItemForKey(int i) {
+        String key = STATUS_ITEM_KEY + i;
+        return this.userPrefs.getString(key, "");
     }
 }

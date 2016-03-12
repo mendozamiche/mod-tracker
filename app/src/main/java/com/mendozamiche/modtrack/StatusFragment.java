@@ -4,6 +4,7 @@
  */
 package com.mendozamiche.modtrack;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -20,6 +21,13 @@ public class StatusFragment extends Fragment {
     private static final int ITEMS_COUNT = 3;
     private RecyclerView recyclerView;
     private RecyclerAdapter adapter;
+    private UserPrefs userPrefs;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.userPrefs = new UserPrefs(this.getContext());
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -29,31 +37,33 @@ public class StatusFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        this.recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
+        this.recyclerView.setHasFixedSize(true);
+
         this.initRecyclerView();
     }
 
     private void initRecyclerView() {
-        this.recyclerView = (RecyclerView) this.getView().findViewById(R.id.recycler_view);
-        this.recyclerView.setHasFixedSize(true);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this.getContext());
         this.recyclerView.setLayoutManager(layoutManager);
 
         ArrayList<String> arrayList = new ArrayList<>();
-        arrayList.add("Check oil");
-        for (int i = 0; i < ITEMS_COUNT; i++) {
-            arrayList.add("Status Item " + (i + 1));
+//        arrayList.add("Check oil");
+        for (int i = 0; i < this.userPrefs.getNumItems(); i++) {
+            String statusItemForKey = this.userPrefs.getStatusItemForKey(i);
+            arrayList.add(statusItemForKey);
         }
 
-        adapter = new RecyclerAdapter(arrayList);
-        this.recyclerView.setAdapter(adapter);
+        this.adapter = new RecyclerAdapter(arrayList);
+        this.recyclerView.setAdapter(this.adapter);
     }
 
     private class RecyclerAdapter extends RecyclerView.Adapter<StatusViewHolder> {
-        ArrayList<String> mItems = new ArrayList<>();
+        ArrayList<String> items = new ArrayList<>();
 
-        public RecyclerAdapter(ArrayList<String> mItems) {
-            this.mItems = mItems;
+        public RecyclerAdapter(ArrayList<String> items) {
+            this.items = items;
         }
 
         @Override
@@ -63,16 +73,16 @@ public class StatusFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(StatusViewHolder viewHolder, int i) {
-            viewHolder.statusItem.setText(mItems.get(i));
+            viewHolder.statusItem.setText(this.items.get(i));
         }
 
         @Override
         public int getItemCount() {
-            return mItems.size();
+            return items.size();
         }
 
         public ArrayList<String> getItems() {
-            return this.mItems;
+            return this.items;
         }
     }
 
@@ -88,7 +98,17 @@ public class StatusFragment extends Fragment {
 
     public void addStatus(String status) {
         ArrayList<String> items = this.adapter.getItems();
+
+        //Save key
+        String key = UserPrefs.STATUS_ITEM_KEY + items.size();
+
         items.add(status);
+
+        //Update number of items
+        this.userPrefs.set(UserPrefs.NUM_STATUS_ITEMS, items.size());
+
+        this.userPrefs.set(key, status);
+
         this.adapter.notifyItemInserted(items.size() - 1);
     }
 }
